@@ -8,9 +8,9 @@ def resize_images(input_dir, output_dir, target_size):
         os.makedirs(output_dir)
 
     for filename in os.listdir(input_dir):
-        if filename.endswith('.jpg') or filename.endswith('.png'):
+        if filename.endswith('.jpg') or filename.endswith('.png') or filename.endswith('.jpeg'):
             image_path = os.path.join(input_dir, filename)
-            output_path = os.path.join(output_dir, filename)
+            output_path = os.path.join(output_dir, filename.replace(' ', ''))
 
             try:
                 image = io.imread(image_path)
@@ -31,10 +31,13 @@ def normalize_pixels(image):
     return normalized_image
 
 
-emotion = input('Enter the emotion to resize (Anger, Disgust, Happiness, Neutral, Sadness): ')
+# emotion = input('Enter the emotion to resize (Anger, Disgust, Happiness, Neutral, Sadness, Surprice): ')
 # Example usage
-input_directory = f'dataset/{emotion}'
-output_directory = f'dataset_resized/{emotion}'
-target_size = 224
+emotions = ['Anger', 'Disgust', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
+for emotion in emotions:
+    print(f'Resizing images for {emotion}...')
+    input_directory = f'dataset/{emotion}'
+    output_directory = f'dataset_resized/{emotion}'
+    target_size = 224
 
-resize_images(input_directory, output_directory, target_size)
+    resize_images(input_directory, output_directory, target_size)
