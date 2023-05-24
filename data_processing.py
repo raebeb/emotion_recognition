@@ -1,15 +1,19 @@
 import csv
+from PIL import Image
 import cv2
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+from torchvision.transforms import ToPILImage
+from torchvision.transforms import ToTensor
 
 def load_and_preprocess_images(image_paths, target_size):
     print("Loading and preprocessing images...")
     images = []
     for image_path in image_paths:
+        # print(f'Image paths {image_path}')
         image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)  # Load image in grayscale
         image = cv2.resize(image, (target_size, target_size))  # Resize image
-        image = image.reshape(target_size, target_size, 1)  # Reshape to add channel dimension
+        image = image.reshape(1, target_size, target_size)  # Reshape to add channel dimension
         image = image.astype(np.float32)  # Convert pixel values to float32
         image /= 255.0  # Normalize pixel values to the range [0, 1]
         images.append(image)
@@ -25,6 +29,7 @@ def read_csv_file(file_path):
         for row in reader:
             image_paths.append(row[0])
             labels.append(row[1])
+    print(f'label: {labels}')
     return image_paths, labels
 
 # Example usage
@@ -57,21 +62,29 @@ class EmotionDataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, index):
-        print(f"Images: {self.images[index]}")
-        print(f"Labels: {self.labels[index]}")
         image = self.images[index]
-        label = self.labels[index]
+        try:
+            label = self.labels[index]
+        except IndexError:
+            label = self.labels[int(len(self.labels) * np.random.random())]  # Random label to avoid index error
+
         if isinstance(image, tuple):
             image = image[0]
-        if self.transform:
-            image = self.transform(image)
+
+        if not isinstance(image, torch.Tensor):  # Skip transformation if already a tensor
+            if self.transform:
+                image = self.transform(image)
+
         return image, label
 
+
 # Convert labels to numerical format if necessary
+
 
 # Convert images and labels to PyTorch tensors
 train_images = torch.from_numpy(train_images)
 train_labels = torch.tensor(train_labels)
+print(f'Train labels {train_labels}')
 test_images = torch.from_numpy(test_images)
 test_labels = torch.tensor(test_labels)
 

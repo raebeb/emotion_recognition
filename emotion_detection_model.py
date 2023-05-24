@@ -51,21 +51,19 @@ transform = transforms.Compose([
 
 # Prepare your dataset and data loaders
 # Assume you have preprocessed and saved your data as tensors or a dataset object
-emotions = ['Anger', 'Disgust', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
-for emotion in emotions:
-    root_dir = f'dataset_resized/{emotion}'
-    train_dataset = EmotionDataset(train_images, train_labels)
-    test_dataset = EmotionDataset(test_images, test_labels)
-    train_dataset = EmotionDataset(train_dataset, root_dir, transform=transform)
-    test_dataset = EmotionDataset(test_dataset, root_dir, transform=transform)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+# Prepare your dataset and data loaders
+# Assume you have preprocessed and saved your data as tensors or a dataset object
+train_dataset = EmotionDataset(train_images.repeat(1, 3, 1, 1), train_labels, transform=transform)
+test_dataset = EmotionDataset(test_images.repeat(1, 3, 1, 1), test_labels, transform=transform)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
 
 # Training loop
 for epoch in range(num_epochs):
     model.train()
     for images, labels in train_loader:
-        images = images.to(device)
+        images = images.to(device)  # Move images to the device
         labels = labels.to(device)
 
         # Forward pass
