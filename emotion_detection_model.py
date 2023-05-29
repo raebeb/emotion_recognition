@@ -29,7 +29,7 @@ class EmotionDetectionModel(nn.Module):
         return x
 
 # Set the device for training
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 
 # Define hyperparameters
 num_classes = 5
@@ -43,7 +43,7 @@ model = EmotionDetectionModel(num_classes).to(device)
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
+ 
 
 transform = transforms.Compose([
     transforms.ToTensor(),
@@ -51,21 +51,21 @@ transform = transforms.Compose([
 
 # Prepare your dataset and data loaders
 # Assume you have preprocessed and saved your data as tensors or a dataset object
-# Prepare your dataset and data loaders
-# Assume you have preprocessed and saved your data as tensors or a dataset object
-train_dataset = EmotionDataset(train_images.repeat(1, 3, 1, 1), train_labels, transform=transform)
-test_dataset = EmotionDataset(test_images.repeat(1, 3, 1, 1), test_labels, transform=transform)
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+emotions = ['Anger', 'Disgust', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
+for emotion in emotions:
+    root_dir = f'dataset_resized/{emotion}'
+    train_dataset = EmotionDataset(train_images, train_labels)
+    test_dataset = EmotionDataset(test_images, test_labels)
+    train_dataset = EmotionDataset(train_dataset, root_dir, transform=transform)
+    test_dataset = EmotionDataset(test_dataset, root_dir, transform=transform)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 
 # Training loop
 for epoch in range(num_epochs):
     model.train()
     for images, labels in train_loader:
-        images = images.to(device)  # Move images to the device
-        labels = labels.to(device)
-
         # Forward pass
         outputs = model(images)
         loss = criterion(outputs, labels)
@@ -81,9 +81,6 @@ for epoch in range(num_epochs):
         correct = 0
         total = 0
         for images, labels in test_loader:
-            images = images.to(device)
-            labels = labels.to(device)
-
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
