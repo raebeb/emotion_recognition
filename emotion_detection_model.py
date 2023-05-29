@@ -77,3 +77,6 @@ for epoch in range(num_epochs):
 
         accuracy = 100 * correct / total
         print(f"Epoch [{epoch+1}/{num_epochs}], Test Accuracy: {accuracy:.2f}%")
+
+# Save the model weights
+torch.save(model.state_dict(), 'model_weights.pth')
