@@ -1,19 +1,18 @@
 import csv
-from PIL import Image
-import cv2
+
 import numpy as np
+from PIL import Image
 from sklearn.preprocessing import LabelEncoder
-from torchvision.transforms import ToPILImage
-from torchvision.transforms import ToTensor
+
 
 def load_and_preprocess_images(image_paths, target_size):
     print("Loading and preprocessing images...")
     images = []
     for image_path in image_paths:
-        # print(f'Image paths {image_path}')
-        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)  # Load image in grayscale
-        image = cv2.resize(image, (target_size, target_size))  # Resize image
-        image = image.reshape(1, target_size, target_size)  # Reshape to add channel dimension
+        image = Image.open(image_path).convert("RGB")  # Open image and convert to RGB format
+        image = image.resize((target_size, target_size))  # Resize image
+        image = np.array(image)  # Convert image to numpy array
+        image = np.transpose(image, (2, 0, 1))  # Transpose dimensions to (channels, height, width)
         image = image.astype(np.float32)  # Convert pixel values to float32
         image /= 255.0  # Normalize pixel values to the range [0, 1]
         images.append(image)
@@ -39,10 +38,11 @@ test_data_file = 'test_data.csv'
 train_image_paths, train_labels = read_csv_file(train_data_file)
 test_image_paths, test_labels = read_csv_file(test_data_file)
 
-# Convert labels to numerical format using LabelEncoder
+# Convert labels to numerical format if necessary
 label_encoder = LabelEncoder()
-train_labels = label_encoder.fit_transform(train_labels)
-test_labels = label_encoder.transform(test_labels)
+train_labels = label_encoder.fit_transform(train_labels) + 1  # Add 1 to shift label values from 0-5 to 1-6
+test_labels = label_encoder.transform(test_labels) + 1  # Add 1 to shift label values from 0-5 to 1-6
+
 
 target_size = 128
 
@@ -76,9 +76,6 @@ class EmotionDataset(Dataset):
                 image = self.transform(image)
 
         return image, label
-
-
-# Convert labels to numerical format if necessary
 
 
 # Convert images and labels to PyTorch tensors

@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader
 from data_processing import EmotionDataset, train_images, train_labels, test_images, test_labels
 
 
-# Define your emotion detection model using nn.Module
 class EmotionDetectionModel(nn.Module):
     def __init__(self, num_classes):
         super(EmotionDetectionModel, self).__init__()
@@ -28,36 +27,29 @@ class EmotionDetectionModel(nn.Module):
         x = self.fc2(x)
         return x
 
-# Set the device for training
 device = torch.device("cpu")
 
-# Define hyperparameters
-num_classes = 5
+num_classes = 7
 learning_rate = 0.001
 batch_size = 32
 num_epochs = 10
 
-# Create an instance of your emotion detection model
+unique_labels = torch.unique(train_labels)
+print(f'unique labels {unique_labels}')
 model = EmotionDetectionModel(num_classes).to(device)
 
-# Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
- 
 
 transform = transforms.Compose([
     transforms.ToTensor(),
 ])
 
-# Prepare your dataset and data loaders
-# Assume you have preprocessed and saved your data as tensors or a dataset object
 emotions = ['Anger', 'Disgust', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
 for emotion in emotions:
     root_dir = f'dataset_resized/{emotion}'
-    train_dataset = EmotionDataset(train_images, train_labels)
-    test_dataset = EmotionDataset(test_images, test_labels)
-    train_dataset = EmotionDataset(train_dataset, root_dir, transform=transform)
-    test_dataset = EmotionDataset(test_dataset, root_dir, transform=transform)
+    train_dataset = EmotionDataset(train_images, train_labels, transform=transform)
+    test_dataset = EmotionDataset(test_images, test_labels, transform=transform)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
@@ -66,16 +58,13 @@ for emotion in emotions:
 for epoch in range(num_epochs):
     model.train()
     for images, labels in train_loader:
-        # Forward pass
         outputs = model(images)
         loss = criterion(outputs, labels)
 
-        # Backward and optimize
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
-    # Evaluation on the test set
     model.eval()
     with torch.no_grad():
         correct = 0
