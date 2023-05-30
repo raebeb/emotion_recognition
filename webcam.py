@@ -1,3 +1,4 @@
+
 import cv2
 import torch
 import torchvision.transforms as transforms
@@ -10,7 +11,17 @@ model.load_state_dict(torch.load('model_weights.pth'))
 model.eval()
 
 # Set up the webcam
-cap = cv2.VideoCapture(0)  # Use 0 for the default webcam
+try:
+    index = 0
+    for i in range(10):
+        print(f'in try {i}')
+        cap = cv2.VideoCapture(i)  # Use 0 for the default webcam
+        if cap.isOpened():
+            index = i
+            break
+except Exception as e:
+    print(e)
+    exit()
 target_size = 128  # Set the target size for resizing the frames
 
 # Preprocess function for webcam frames
